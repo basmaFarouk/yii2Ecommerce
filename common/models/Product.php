@@ -3,6 +3,10 @@
 namespace common\models;
 
 use Yii;
+use yii\web\UploadedFile;
+use yii\helpers\FileHelper;
+use yii\behaviors\BlameableBehavior;
+use yii\behaviors\TimestampBehavior;
 
 /**
  * This is the model class for table "{{%products}}".
@@ -20,12 +24,27 @@ use Yii;
  */
 class Product extends \yii\db\ActiveRecord
 {
+
+
+    /**
+     * @var \yii\web\UploadedFile
+     */
+    public $imageFile;
+
     /**
      * {@inheritdoc}
      */
     public static function tableName()
     {
         return '{{%products}}';
+    }
+
+    public function behaviors()
+    {
+        return [
+            TimestampBehavior::class,
+            BlameableBehavior::class,
+        ];
     }
 
     /**
@@ -36,6 +55,7 @@ class Product extends \yii\db\ActiveRecord
         return [
             [['name', 'price', 'status'], 'required'],
             [['description'], 'string'],
+            [['imageFile'], 'image', 'extensions' => 'png, jpg, jpeg, webp', 'maxSize' => 10 * 1024 * 1024],
             [['price'], 'number'],
             [['status', 'created_at', 'updated_at', 'created_by', 'updated_by'], 'integer'],
             [['name'], 'string', 'max' => 255],
@@ -52,7 +72,8 @@ class Product extends \yii\db\ActiveRecord
             'id' => 'ID',
             'name' => 'Name',
             'description' => 'Description',
-            'image' => 'Product Image',
+            // 'image' => 'Product Image',
+            'imageFile' => 'Product Image',
             'price' => 'Price',
             'status' => 'Published',
             'created_at' => 'Created At',
@@ -69,5 +90,32 @@ class Product extends \yii\db\ActiveRecord
     public static function find()
     {
         return new \common\models\query\ProductQuery(get_called_class());
+    }
+
+    public function uploadImage()
+    {
+
+
+        $transaction = Yii::$app->db->beginTransaction();
+        $image = UploadedFile::getInstance($this, 'imageFile');
+        $imgName = 'pro_' . Yii::$app->security->generateRandomString() . '.' . $image->getExtension();
+        // $image->saveAs(Yii::getAlias('@productImgPath').'/'.$imgName);
+        $this->image = $imgName;
+
+
+        if (!$image->saveAs(Yii::getAlias('@productImgPath') . '/' . $imgName)) {
+            $transaction->rollBack();
+
+            return false;
+        }
+
+        $transaction->commit();
+
+        return true;
+    }
+
+    public function getImageUrl()
+    {
+        return Yii::getAlias('@productImgUrl') . '/' . $this->image;
     }
 }

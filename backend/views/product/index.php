@@ -27,16 +27,49 @@ $this->params['breadcrumbs'][] = $this->title;
         'dataProvider' => $dataProvider,
         'filterModel' => $searchModel,
         'columns' => [
-            ['class' => 'yii\grid\SerialColumn'],
+            // ['class' => 'yii\grid\SerialColumn'],
 
-            'id',
+            [
+                'attribute'=>'id',
+                'contentOptions'=>[
+                    'style'=>'width:70px'
+                ]
+            ],
             'name',
-            'description:ntext',
-            'image',
-            'price',
-            //'status',
-            //'created_at',
-            //'updated_at',
+            //'description:ntext',
+            // 'image',
+            [
+                'attribute'=>'image',
+                'label'=>'Image',
+                'content' => function($model){
+                    /** @var \common\models\Product $model */
+                    return Html::img($model->getImageUrl(),['style'=>'width:50px']);
+                }
+            ],
+            'price:currency',
+            [
+                'attribute'=>'status',
+                'content' => function($model){
+                    /** @var \common\models\Product $model */
+                    return Html::tag('span', $model->status ? 'Active' : 'Draft', [
+                        'class' => $model->status ? 'badge badge-success' : 'badge badge-danger'
+                    ]);
+                }
+            ],
+            [
+                'attribute'=>'created_at',
+                'format'=>[
+                    'datetime'
+                ],
+                'contentOptions'=>['style'=>'white-space: nowrap']
+            ],
+            [
+                'attribute'=>'updated_at',
+                'format'=>[
+                    'datetime'
+                ],
+                'contentOptions'=>['style'=>'white-space: nowrap']
+            ],
             //'created_by',
             //'updated_by',
             [

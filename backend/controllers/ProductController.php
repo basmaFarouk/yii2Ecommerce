@@ -2,11 +2,14 @@
 
 namespace backend\controllers;
 
-use common\models\Product;
-use backend\models\search\ProductSearch;
+use Yii;
 use yii\web\Controller;
-use yii\web\NotFoundHttpException;
+use yii\web\UploadedFile;
+use common\models\Product;
+use yii\helpers\VarDumper;
 use yii\filters\VerbFilter;
+use yii\web\NotFoundHttpException;
+use backend\models\search\ProductSearch;
 
 /**
  * ProductController implements the CRUD actions for Product model.
@@ -68,9 +71,17 @@ class ProductController extends Controller
     public function actionCreate()
     {
         $model = new Product();
+      //  $model->imageFile= UploadedFile::getInstance($model,'imageFile');
+        $model->imageFile = UploadedFile::getInstance($model, 'imageFile');
+        // var_dump($model->imageFile );
+        // exit;
+
 
         if ($this->request->isPost) {
-            if ($model->load($this->request->post()) && $model->save()) {
+            if ($model->load($this->request->post())) {
+                if($model->uploadImage()){
+                    $model->save();
+                };
                 return $this->redirect(['view', 'id' => $model->id]);
             }
         } else {
