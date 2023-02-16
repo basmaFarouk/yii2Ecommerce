@@ -92,30 +92,38 @@ class Product extends \yii\db\ActiveRecord
         return new \common\models\query\ProductQuery(get_called_class());
     }
 
-    public function uploadImage()
+    public function uploadImage() //neeeewww
     {
-
-
         $transaction = Yii::$app->db->beginTransaction();
         $image = UploadedFile::getInstance($this, 'imageFile');
-        $imgName = 'pro_' . Yii::$app->security->generateRandomString() . '.' . $image->getExtension();
-        // $image->saveAs(Yii::getAlias('@productImgPath').'/'.$imgName);
-        $this->image = $imgName;
+        if ($image) {
 
+            $imgName = Yii::$app->security->generateRandomString() . '.' . $image->getExtension();
+            // $image->saveAs(Yii::getAlias('@productImgPath').'/'.$imgName);
+            $this->image = $imgName;
 
-        if (!$image->saveAs(Yii::getAlias('@productImgPath') . '/' . $imgName)) {
-            $transaction->rollBack();
+            if (!$image->saveAs(Yii::getAlias('@productImgPath') . '/' . $imgName)) {
+                $transaction->rollBack();
 
-            return false;
+                return false;
+            }
         }
-
         $transaction->commit();
+
+
 
         return true;
     }
 
-    public function getImageUrl()
+    public function getImageUrl() //neeewww
     {
-        return Yii::getAlias('@productImgUrl') . '/' . $this->image;
+        if($this->image){
+
+            return Yii::getAlias('@productImgUrl') . '/' . $this->image;
+        }else{
+            return Yii::$app->params['frontendUrl'].'/img/no_image.svg';
+        }
     }
+
+
 }
