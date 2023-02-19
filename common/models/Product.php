@@ -7,6 +7,7 @@ use yii\web\UploadedFile;
 use yii\helpers\FileHelper;
 use yii\behaviors\BlameableBehavior;
 use yii\behaviors\TimestampBehavior;
+use yii\helpers\StringHelper;
 
 /**
  * This is the model class for table "{{%products}}".
@@ -125,5 +126,10 @@ class Product extends \yii\db\ActiveRecord
         }
     }
 
+
+    public function getShortDescription()
+    {
+        return StringHelper::truncateWords(strip_tags($this->description),30);
+    }
 
 }
