@@ -5,6 +5,8 @@ use yii\helpers\Html;
 use yii\helpers\Url;
 use yii\grid\ActionColumn;
 use yii\grid\GridView;
+use kartik\date\DatePicker;
+use kartik\datetime\DateTimePicker;
 
 /** @var yii\web\View $this */
 /** @var backend\models\search\ProductSearch $searchModel */
@@ -47,6 +49,7 @@ $this->params['breadcrumbs'][] = $this->title;
                 }
             ],
             'price:currency',
+           // 'price',
             [
                 'attribute'=>'status',
                 'content' => function($model){
@@ -61,6 +64,17 @@ $this->params['breadcrumbs'][] = $this->title;
                 'format'=>[
                     'datetime'
                 ],
+                'filter'=> DatePicker::widget([
+                    'name' => 'created_at',
+                    'attribute'=>'created_at',
+                    'type' => DatePicker::TYPE_COMPONENT_APPEND,
+                    'model'=>$searchModel,
+                    // 'value' => '23-Feb-1982',
+                    'pluginOptions' => [
+                        'autoclose' => true,
+                        'format' => 'dd-mm-yyyy'
+                    ]
+                    ]),
                 'contentOptions'=>['style'=>'white-space: nowrap']
             ],
             [
@@ -68,6 +82,17 @@ $this->params['breadcrumbs'][] = $this->title;
                 'format'=>[
                     'datetime'
                 ],
+                'filter'=> DatePicker::widget([
+                    'name' => 'updated_at',
+                    'attribute'=>'updated_at',
+                    'type' => DatePicker::TYPE_COMPONENT_APPEND,
+                    'model'=>$searchModel,
+                    // 'value' => '23-Feb-1982',
+                    'pluginOptions' => [
+                        'autoclose' => true,
+                        'format' => 'dd-mm-yyyy'
+                    ]
+                    ]),
                 'contentOptions'=>['style'=>'white-space: nowrap']
             ],
             //'created_by',
