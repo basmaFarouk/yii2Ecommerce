@@ -60,7 +60,8 @@ class ProductSearch extends Product
 
         // grid filtering conditions
         $query->andFilterWhere([
-            'id' => $this->id,
+           'id' => $this->id,
+           'name' => $this->name,
             // 'price' => $this->price,
             'status' => $this->status,
             //  'created_at' => $this->created_at,
@@ -76,10 +77,12 @@ class ProductSearch extends Product
         //     var_dump(strtotime($this->created_at.'24:59:59'));
         //     exit;
         // }
+        // var_dump($this->name);
+        // exit;
         $query->andFilterWhere(['like', 'name', $this->name])
             ->andFilterWhere(['like', 'description', $this->description])
             ->andFilterWhere(['like', 'image', $this->image]);
-        // ->andFilterWhere(['between', 'created_at', $this->created_at]);
+
         if ($this->price) {
             $price1 = explode('-', $this->price)[0];
             $price2 = explode('-', $this->price)[1];

@@ -1,11 +1,13 @@
 <?php
 
-use common\models\Product;
-use yii\helpers\Html;
 use yii\helpers\Url;
-use yii\grid\ActionColumn;
+use yii\helpers\Html;
 use yii\grid\GridView;
+use common\models\Product;
+use yii\grid\ActionColumn;
 use kartik\date\DatePicker;
+use kartik\select2\Select2;
+use yii\helpers\ArrayHelper;
 use kartik\datetime\DateTimePicker;
 
 /** @var yii\web\View $this */
@@ -37,7 +39,22 @@ $this->params['breadcrumbs'][] = $this->title;
                     'style'=>'width:70px'
                 ]
             ],
-            'name',
+            [
+                'attribute'=>'name',
+                'filter'=>Select2::widget([
+                    'model' => $searchModel,
+                    'attribute' => 'name',
+                    'data' => ArrayHelper::map(Product::find()->all(), 'name', 'name'),
+                    'options' => [
+                        'placeholder' => 'Select a name ...',
+
+                    ],
+                    'pluginOptions' => [
+                        'allowClear' => true,
+                    ],
+                ])
+            ],
+           // 'name',
             //'description:ntext',
             // 'image',
             [

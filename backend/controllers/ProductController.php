@@ -3,11 +3,13 @@
 namespace backend\controllers;
 
 use Yii;
+use yii\db\Query;
 use yii\web\Controller;
 use yii\web\UploadedFile;
 use common\models\Product;
 use yii\helpers\VarDumper;
 use yii\filters\VerbFilter;
+use yii\helpers\ArrayHelper;
 use yii\web\NotFoundHttpException;
 use backend\models\search\ProductSearch;
 
@@ -45,7 +47,6 @@ class ProductController extends Controller
         Yii::warning($this->request->queryParams);
         $dataProvider = $searchModel->search($this->request->queryParams);
 
-
         return $this->render('index', [
             'searchModel' => $searchModel,
             'dataProvider' => $dataProvider,
@@ -73,7 +74,7 @@ class ProductController extends Controller
     public function actionCreate()
     {
         $model = new Product();
-      //  $model->imageFile= UploadedFile::getInstance($model,'imageFile');
+        //  $model->imageFile= UploadedFile::getInstance($model,'imageFile');
         $model->imageFile = UploadedFile::getInstance($model, 'imageFile');
         // var_dump($model->imageFile );
         // exit;
@@ -81,7 +82,7 @@ class ProductController extends Controller
 
         if ($this->request->isPost) {
             if ($model->load($this->request->post())) {
-                if($model->uploadImage()){
+                if ($model->uploadImage()) {
                     $model->save();
                 };
                 return $this->redirect(['view', 'id' => $model->id]);
@@ -143,5 +144,27 @@ class ProductController extends Controller
         }
 
         throw new NotFoundHttpException('The requested page does not exist.');
+    }
+
+
+    public function actionProductList($q = null, $id = null) {
+    //    $data= ArrayHelper::map(Product::find()->all(), 'id', 'name');
+    //    return json_encode($data);
+        \Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
+        $out = ['results' => ['id' => '', 'text' => '']];
+        if (!is_null($q)) {
+            $query = new Query;
+            $query->select('id, name')
+                ->from('products')
+                ->where(['like', 'name', $q])
+                ->limit(20);
+            $command = $query->createCommand();
+            $data = $command->queryAll();
+            $out['results'] = array_values($data);
+        }
+        elseif ($id > 0) {
+            $out['results'] = ['id' => $id, 'text' => Product::find($id)->name];
+        }
+        return $out;
     }
 }
