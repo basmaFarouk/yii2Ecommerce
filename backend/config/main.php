@@ -1,6 +1,8 @@
 <?php
 
 use yii\bootstrap5\BootstrapAsset;
+use yii\rest\UrlRule;
+use yii\web\JsonParser;
 
 $params = array_merge(
     require __DIR__ . '/../../common/config/params.php',
@@ -27,6 +29,9 @@ return [
     'components' => [
         'request' => [
             'csrfParam' => '_csrf-backend',
+            'parsers'=>[
+                'application/json'=>JsonParser::class,
+            ]
         ],
         'user' => [
             'identityClass' => 'common\models\User',
@@ -62,11 +67,11 @@ return [
 
             'showScriptName'        => false,
 
-            'enableStrictParsing'   => false,
+          //  'enableStrictParsing'   => false,
 
             'rules' => [
 
-              //  'products' => 'product/index',
+                ['class'=>UrlRule::class,'controller'=>'product-api']
 
             ],
 

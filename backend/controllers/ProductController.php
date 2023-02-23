@@ -3,15 +3,20 @@
 namespace backend\controllers;
 
 use Yii;
+use Exception;
 use yii\db\Query;
 use yii\web\Controller;
+use common\models\Model;
 use yii\web\UploadedFile;
 use common\models\Product;
 use yii\helpers\VarDumper;
 use yii\filters\VerbFilter;
 use yii\helpers\ArrayHelper;
+use common\models\ProductTypes;
 use yii\web\NotFoundHttpException;
 use backend\models\search\ProductSearch;
+
+use function PHPUnit\Framework\isEmpty;
 
 /**
  * ProductController implements the CRUD actions for Product model.
@@ -74,6 +79,7 @@ class ProductController extends Controller
     public function actionCreate()
     {
         $model = new Product();
+        $modelsProductTypes = [new ProductTypes()];
         //  $model->imageFile= UploadedFile::getInstance($model,'imageFile');
         $model->imageFile = UploadedFile::getInstance($model, 'imageFile');
         // var_dump($model->imageFile );
@@ -82,10 +88,46 @@ class ProductController extends Controller
 
         if ($this->request->isPost) {
             if ($model->load($this->request->post())) {
-                if ($model->uploadImage()) {
+                // var_dump(Yii::$app->request->post('ProductTypes')[0]['size']);
+                // exit;
+                if(isset(Yii::$app->request->post('ProductTypes')[0])){
                     $model->save();
-                };
-                return $this->redirect(['view', 'id' => $model->id]);
+                    return $this->redirect(['view', 'id' => $model->id]);
+                }else{
+
+                $modelsProductTypes = Model::createMultiple(ProductTypes::class);
+    
+                // validate all models
+                $valid = $model->validate();
+                $valid = Model::validateMultiple($modelsProductTypes) && $valid;
+                
+                if ($valid) {
+                    $transaction = \Yii::$app->db->beginTransaction();
+                    try {
+                        if ($flag = $model->save(false)) {
+                            foreach ($modelsProductTypes as $modelsProductType) {
+                                $modelsProductType->product_id = $model->id;
+                                if (! ($flag = $modelsProductType->save(false))) {
+                                    $transaction->rollBack();
+                                    break;
+                                }
+                            }
+                        }
+                        if ($flag) {
+                            if ($model->uploadImage()) {
+                                $model->save();
+                            };
+                            $transaction->commit();
+                            return $this->redirect(['view', 'id' => $model->id]);
+                        }
+                    } catch (Exception $e) {
+                        $transaction->rollBack();
+                    }
+                }
+
+            }
+
+              //  return $this->redirect(['view', 'id' => $model->id]);
             }
         } else {
             $model->loadDefaultValues();
@@ -93,6 +135,7 @@ class ProductController extends Controller
 
         return $this->render('create', [
             'model' => $model,
+            'modelsProductTypes'=>(empty($modelsProductTypes)) ? [new ProductTypes] : $modelsProductTypes,
         ]);
     }
 

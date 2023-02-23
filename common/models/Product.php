@@ -84,6 +84,8 @@ class Product extends \yii\db\ActiveRecord
         ];
     }
 
+
+
     /**
      * {@inheritdoc}
      * @return \common\models\query\ProductQuery the active query used by this AR class.
