@@ -32,7 +32,7 @@ class ProductController extends Controller
             parent::behaviors(),
             [
                 'verbs' => [
-                    'class' => VerbFilter::className(),
+                    'class' => VerbFilter::class,
                     'actions' => [
                         'delete' => ['POST'],
                     ],
@@ -88,46 +88,47 @@ class ProductController extends Controller
 
         if ($this->request->isPost) {
             if ($model->load($this->request->post())) {
-                // var_dump(Yii::$app->request->post('ProductTypes')[0]['size']);
+                // if(!count(array_filter(Yii::$app->request->post('ProductTypes')[0]))){
+                //     echo "yes";
+                // }else{
+                //     echo "no";
+                // }
                 // exit;
-                if(isset(Yii::$app->request->post('ProductTypes')[0])){
-                    $model->save();
-                    return $this->redirect(['view', 'id' => $model->id]);
-                }else{
+                if (count(array_filter(Yii::$app->request->post('ProductTypes')[0]))) {
+                    $modelsProductTypes = Model::createMultiple(ProductTypes::class);
+                    Model::loadMultiple($modelsProductTypes, Yii::$app->request->post());
 
-                $modelsProductTypes = Model::createMultiple(ProductTypes::class);
-    
-                // validate all models
-                $valid = $model->validate();
-                $valid = Model::validateMultiple($modelsProductTypes) && $valid;
-                
-                if ($valid) {
-                    $transaction = \Yii::$app->db->beginTransaction();
-                    try {
-                        if ($flag = $model->save(false)) {
-                            foreach ($modelsProductTypes as $modelsProductType) {
-                                $modelsProductType->product_id = $model->id;
-                                if (! ($flag = $modelsProductType->save(false))) {
-                                    $transaction->rollBack();
-                                    break;
+                    // validate all models
+                    $valid = $model->validate();
+                    $valid = Model::validateMultiple($modelsProductTypes) && $valid;
+
+                    if ($valid) {
+                        $transaction = \Yii::$app->db->beginTransaction();
+                        try {
+                            if ($flag = $model->save(false)) {
+                                foreach ($modelsProductTypes as $modelsProductType) {
+                                    $modelsProductType->product_id = $model->id;
+                                    if (!($flag = $modelsProductType->save(false))) {
+                                        $transaction->rollBack();
+                                        break;
+                                    }
                                 }
                             }
+                            if ($flag) {
+
+                                $transaction->commit();
+                               // return $this->redirect(['view', 'id' => $model->id]);
+                            }
+                        } catch (Exception $e) {
+                            $transaction->rollBack();
                         }
-                        if ($flag) {
-                            if ($model->uploadImage()) {
-                                $model->save();
-                            };
-                            $transaction->commit();
-                            return $this->redirect(['view', 'id' => $model->id]);
-                        }
-                    } catch (Exception $e) {
-                        $transaction->rollBack();
                     }
                 }
+                if ($model->uploadImage()) {
+                    $model->save();
+                };
 
-            }
-
-              //  return $this->redirect(['view', 'id' => $model->id]);
+                  return $this->redirect(['view', 'id' => $model->id]);
             }
         } else {
             $model->loadDefaultValues();
@@ -135,7 +136,7 @@ class ProductController extends Controller
 
         return $this->render('create', [
             'model' => $model,
-            'modelsProductTypes'=>(empty($modelsProductTypes)) ? [new ProductTypes] : $modelsProductTypes,
+            'modelsProductTypes' => (empty($modelsProductTypes)) ? [new ProductTypes] : $modelsProductTypes,
         ]);
     }
 
@@ -190,9 +191,10 @@ class ProductController extends Controller
     }
 
 
-    public function actionProductList($q = null, $id = null) {
-    //    $data= ArrayHelper::map(Product::find()->all(), 'id', 'name');
-    //    return json_encode($data);
+    public function actionProductList($q = null, $id = null)
+    {
+        //    $data= ArrayHelper::map(Product::find()->all(), 'id', 'name');
+        //    return json_encode($data);
         \Yii::$app->response->format = \yii\web\Response::FORMAT_JSON;
         $out = ['results' => ['id' => '', 'text' => '']];
         if (!is_null($q)) {
@@ -204,8 +206,7 @@ class ProductController extends Controller
             $command = $query->createCommand();
             $data = $command->queryAll();
             $out['results'] = array_values($data);
-        }
-        elseif ($id > 0) {
+        } elseif ($id > 0) {
             $out['results'] = ['id' => $id, 'text' => Product::find($id)->name];
         }
         return $out;
