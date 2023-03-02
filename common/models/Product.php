@@ -131,7 +131,10 @@ class Product extends \yii\db\ActiveRecord
 
     public function getShortDescription()
     {
-        return StringHelper::truncateWords(strip_tags($this->description),30);
+        if($this->description){
+
+            return StringHelper::truncateWords(strip_tags($this->description),30);
+        }
     }
 
 }

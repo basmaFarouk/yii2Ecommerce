@@ -4,6 +4,8 @@ use yii\helpers\Url;
 use yii\helpers\Html;
 use yii\grid\GridView;
 use common\models\Product;
+use common\widgets\BgWidget;
+use common\widgets\ButtonWidget;
 use yii\grid\ActionColumn;
 use kartik\date\DatePicker;
 use kartik\select2\Select2;
@@ -26,6 +28,20 @@ $this->params['breadcrumbs'][] = $this->title;
     </p>
 
     <?php // echo $this->render('_search', ['model' => $searchModel]); ?>
+
+    <!-- Trying Widgets -->
+    <?php echo ButtonWidget::widget([
+        'text'=>'submit',
+    ]) ?>
+
+    <?php BgWidget::begin([
+        'bgColor'=>'lightgreen',
+    ]) ?>
+        Hello every one
+    <?php BgWidget::end() ?>
+
+    <!-- End Widgets -->
+
 
     <?= GridView::widget([
         'dataProvider' => $dataProvider,

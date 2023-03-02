@@ -88,12 +88,7 @@ class ProductController extends Controller
 
         if ($this->request->isPost) {
             if ($model->load($this->request->post())) {
-                // if(!count(array_filter(Yii::$app->request->post('ProductTypes')[0]))){
-                //     echo "yes";
-                // }else{
-                //     echo "no";
-                // }
-                // exit;
+
                 if (count(array_filter(Yii::$app->request->post('ProductTypes')[0]))) {
                     $modelsProductTypes = Model::createMultiple(ProductTypes::class);
                     Model::loadMultiple($modelsProductTypes, Yii::$app->request->post());

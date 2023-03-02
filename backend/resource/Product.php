@@ -12,6 +12,8 @@ class Product extends ModelsProduct{
 
     public function extraFields()
     {
-        return ['created_at','updated_at'];
+        return ['created_at','updated_at','created_by'];
     }
+
+
 }

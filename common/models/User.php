@@ -20,6 +20,7 @@ use yii\web\IdentityInterface;
  * @property string $verification_token
  * @property string $email
  * @property string $auth_key
+ * @property string $access_token //edit for access token
  * @property integer $status
  * @property integer $created_at
  * @property integer $updated_at
@@ -61,8 +62,8 @@ class User extends ActiveRecord implements IdentityInterface
     public function rules()
     {
         return [
-            [['firstname','lastname','username','email'],'required'],
-            [['firstname','lastname','username','email'],'string','max'=>255],
+            [['firstname', 'lastname', 'username', 'email'], 'required'],
+            [['firstname', 'lastname', 'username', 'email'], 'string', 'max' => 255],
             ['status', 'default', 'value' => self::STATUS_INACTIVE],
             ['status', 'in', 'range' => [self::STATUS_ACTIVE, self::STATUS_INACTIVE, self::STATUS_DELETED]],
         ];
@@ -79,9 +80,10 @@ class User extends ActiveRecord implements IdentityInterface
     /**
      * {@inheritdoc}
      */
-    public static function findIdentityByAccessToken($token, $type = null)
+    public static function findIdentityByAccessToken($token, $type = null) //edit for access token
     {
-        throw new NotSupportedException('"findIdentityByAccessToken" is not implemented.');
+        return static::findOne(['access_token' => $token, 'status' => self::STATUS_ACTIVE]);
+        //throw new NotSupportedException('"findIdentityByAccessToken" is not implemented.');
     }
 
     /**
@@ -119,7 +121,8 @@ class User extends ActiveRecord implements IdentityInterface
      * @param string $token verify email token
      * @return static|null
      */
-    public static function findByVerificationToken($token) {
+    public static function findByVerificationToken($token)
+    {
         return static::findOne([
             'verification_token' => $token,
             'status' => self::STATUS_INACTIVE
@@ -197,6 +200,14 @@ class User extends ActiveRecord implements IdentityInterface
     }
 
     /**
+     * Generates Access Token   
+     */
+    public function generateAccessToken() //for access token
+    {
+        $this->access_token = Yii::$app->security->generateRandomString();
+    }
+
+    /**
      * Generates new password reset token
      */
     public function generatePasswordResetToken()
@@ -220,22 +231,22 @@ class User extends ActiveRecord implements IdentityInterface
         $this->password_reset_token = null;
     }
 
-    public function getDisplayName(){
-        $fullName=trim($this->firstname.' '.$this->lastname);
+    public function getDisplayName()
+    {
+        $fullName = trim($this->firstname . ' ' . $this->lastname);
         return $fullName ?: $this->email;
     }
 
     // User has many addresses
     public function getAddresses()
     {
-        return $this->hasMany(UserAddress::class,['user_id'=>'id']);
+        return $this->hasMany(UserAddress::class, ['user_id' => 'id']);
     }
 
     public function getAddress()
     {
-        $address= $this->addresses[0] ?? new UserAddress();
-        $address->user_id=$this->id;
+        $address = $this->addresses[0] ?? new UserAddress();
+        $address->user_id = $this->id;
         return $address;
-
     }
 }

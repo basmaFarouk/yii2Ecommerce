@@ -1,5 +1,6 @@
 <?php
 
+use backend\components\TestComponent;
 use yii\bootstrap5\BootstrapAsset;
 use yii\rest\UrlRule;
 use yii\web\JsonParser;
@@ -29,7 +30,7 @@ return [
     'components' => [
         'request' => [
             'csrfParam' => '_csrf-backend',
-            'parsers'=>[
+            'parsers'=>[ //to send json data in api
                 'application/json'=>JsonParser::class,
             ]
         ],
@@ -60,6 +61,11 @@ return [
                 BootstrapAsset::class=>false,
             ]
         ],
+
+        'test'=>[ //add new component
+            'class'=>TestComponent::class,
+            
+        ],
         
         'urlManager' => [
 
@@ -71,7 +77,11 @@ return [
 
             'rules' => [
 
-                ['class'=>UrlRule::class,'controller'=>'product-api']
+                ['class'=>UrlRule::class,'controller'=>['product-api','api/user','api/user-address']],
+                [
+                    'pattern'=>'user/<userid:\d+>/address',
+                    'route'=>'api/user-address/index',
+                ]
 
             ],
 
