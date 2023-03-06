@@ -120,9 +120,13 @@ class Product extends \yii\db\ActiveRecord
 
     public function getImageUrl() //neeewww
     {
-        if($this->image){
+        return self::formatImageUrl($this->image);
+    }
 
-            return Yii::getAlias('@productImgUrl') . '/' . $this->image;
+    public static function formatImageUrl($imagePath){
+        if($imagePath){
+
+            return Yii::getAlias('@productImgUrl') . '/' . $imagePath;
         }else{
             return Yii::$app->params['frontendUrl'].'/img/no_image.svg';
         }

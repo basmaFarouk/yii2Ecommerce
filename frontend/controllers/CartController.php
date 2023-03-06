@@ -2,16 +2,44 @@
 
 namespace frontend\controllers;
 
-use common\models\CartItem;
 use Yii;
-use yii\web\Controller;
+use yii\web\Response;
+//use yii\web\Controller;
+use common\models\Product;
+use common\models\CartItem;
+use frontend\base\Controller;
+use yii\filters\ContentNegotiator;
+use yii\filters\VerbFilter;
+use yii\web\NotFoundHttpException;
 
-class CartController extends Controller{
+class CartController extends Controller
+{
 
-    public function actionIndex(){
-        if(Yii::$app->user->isGuest){
+    public function behaviors()
+    {
+        return [
+            [
+                'class' => ContentNegotiator::class,
+                'only' => ['add'],
+                'formats' => [
+                    'application/json' => Response::FORMAT_JSON,
+                ],
+            ],
+            [
+                'class'=>VerbFilter::class,
+                'actions'=>[
+                    'delete'=>['POST','DELETE'],
+                ]
+            ]
+        ];
+    }
+
+    public function actionIndex()
+    {
+        if (Yii::$app->user->isGuest) {
             //get the items from session
-        }else{
+            $cartItems=Yii::$app->session->get(CartItem::SESSION_KEY,[]);
+        } else {
             //get the items from database
             $cartItems = CartItem::findBySql(
                 "SELECT
@@ -24,13 +52,89 @@ class CartController extends Controller{
                         FROM cart_items c
                                  LEFT JOIN products p on p.id = c.product_id
                          WHERE c.created_by = :userId",
-                ['userId' => Yii::$app->user->id])
+                ['userId' => Yii::$app->user->id]
+            )
                 ->asArray()
                 ->all();
         }
 
-        return $this->render('index',[
-            'items'=>$cartItems,
+        return $this->render('index', [
+            'items' => $cartItems,
         ]);
+    }
+
+    public function actionAdd()
+    {
+        $id = Yii::$app->request->post('id');
+        $product = Product::findOne(['id' => $id,'status'=>1]);
+        if (!$product) {
+            throw new NotFoundHttpException("can't find product");
+        }
+
+        if (Yii::$app->user->isGuest) {
+            //Save in session
+
+            $cartItems=Yii::$app->session->get(CartItem::SESSION_KEY,[]);
+            $found=false;
+            foreach($cartItems as &$cartItem){
+                if($cartItem['id']==$id){
+                    $cartItem['quantity']++;
+                    $found=true;
+                    break;
+                }
+            }
+
+            if(!$found){
+                $cartItem=[
+                    'id'=>$id,
+                    'name'=>$product->name,
+                    'image'=>$product->image,
+                    'price'=>$product->price,
+                    'quantity'=>1,
+                    'total_price'=>$product->price
+                ];
+                $cartItems[]=$cartItem;
+            }
+            Yii::$app->session->set(CartItem::SESSION_KEY,$cartItems);
+        } else {
+            $userID = Yii::$app->user->id;
+            $cartItem = CartItem::find()->userId($userID)->productId($id)->one();
+            if ($cartItem) { //if product in cart item then increase quantity
+                $cartItem->quantity++;
+            } else {
+
+                $cartItem = new CartItem();
+                $cartItem->product_id = $id;
+                $cartItem->created_by = Yii::$app->user->id;
+                $cartItem->quantity = 1;
+            }
+            if ($cartItem->save()) {
+                return [
+                    'success' => true,
+                ];
+            } else {
+                return [
+                    'success' => false,
+                    'errors' => $cartItem->errors,
+                ];
+            }
+        }
+    }
+
+    public function actionDelete($id){
+        if(isGuest()){
+            $cartItems=Yii::$app->session->get(CartItem::SESSION_KEY,[]);
+            foreach($cartItems as $i=>$cartItem){
+                if($cartItem['id']==$id){
+                    array_splice($cartItems, $i, 1);
+                    break;
+                }
+            }
+            Yii::$app->session->set(CartItem::SESSION_KEY,$cartItems);
+        }else{
+            CartItem::deleteAll(['product_id'=>$id,'created_by'=>currUserId()]);
+        }
+
+        return $this->redirect(['index']);
     }
 }

@@ -3,9 +3,10 @@
 namespace frontend\controllers;
 
 use Yii;
-use yii\web\Controller;
+//use yii\web\Controller;
 use yii\filters\VerbFilter;
 use common\models\User;
+use frontend\base\Controller;
 use yii\filters\AccessControl;
 use yii\web\ForbiddenHttpException;
 

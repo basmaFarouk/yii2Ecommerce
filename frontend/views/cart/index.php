@@ -1,5 +1,6 @@
 <?php
 
+use common\models\Product;
 use yii\helpers\Html;
 use yii\helpers\Url;
 
@@ -10,6 +11,7 @@ use yii\helpers\Url;
         <h3>Your Cart Items</h3>
     </div>
     <div class="card-body p-0">
+        <?php if(!empty($items)): ?>
         <table class="table table-hover">
             <thead>
                 <tr>
@@ -26,7 +28,7 @@ use yii\helpers\Url;
                     <tr>
                         <td> <?php echo $item['name'] ?> </td>
                         <td>
-                            <img src="<?php echo Yii::getAlias('@productImgUrl') . '/' . $item['image'] ?>" alt="" style="width: 50px;">
+                            <img src="<?php echo Product::formatImageUrl($item['image'] ) ?>" alt="" style="width: 50px;">
                         </td>
                         <td><?php echo $item['price'] ?></td>
                         <td><?php echo $item['quantity'] ?></td>
@@ -46,5 +48,11 @@ use yii\helpers\Url;
 
             <a href="<?php echo Url::to(['/cart/checkout']) ?>" class="btn btn-primary">Checkout</a>
         </div>
+        
+        <?php else: ?>
+        
+            <p class="text-muted text-center p-5">There are no items in the cart</p>
+
+        <?php endif; ?>
     </div>
 </div>

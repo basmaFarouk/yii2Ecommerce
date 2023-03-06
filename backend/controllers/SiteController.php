@@ -3,10 +3,11 @@
 namespace backend\controllers;
 
 use common\models\LoginForm;
+use frontend\base\Controller;
 use Yii;
 use yii\filters\VerbFilter;
 use yii\filters\AccessControl;
-use yii\web\Controller;
+// use yii\web\Controller;
 use yii\web\Response;
 
 /**

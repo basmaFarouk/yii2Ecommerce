@@ -7,9 +7,13 @@ use yii\bootstrap5\Nav;
 use yii\bootstrap5\Html;
 use common\widgets\Alert;
 use yii\bootstrap5\NavBar;
+use common\models\CartItem;
 use yii\bootstrap5\Dropdown;
 use frontend\assets\AppAsset;
 use yii\bootstrap5\Breadcrumbs;
+
+$items=$this->params['cartItemCount'];
+
 
 AppAsset::register($this);
 ?>
@@ -51,7 +55,7 @@ AppAsset::register($this);
             'items' => $menuItems,
         ]);
   
-        echo Html::tag('div', Html::a('Cart', ['/cart/index'], ['class' => ['btn btn-link link-light text-decoration-none']]), ['class' => ['d-flex']]);
+        echo Html::tag('div', Html::a("Cart <span id='cart-quantity' class='badge badge-danger'>$items</span>", ['/cart/index'], ['class' => ['btn btn-link link-light text-decoration-none']]), ['class' => ['d-flex']]);
         if (Yii::$app->user->isGuest) {
             echo Html::tag('div', Html::a('Login', ['/site/login'], ['class' => ['btn btn-link login text-decoration-none']]), ['class' => ['d-flex']]);
         } else {
